@@ -8,8 +8,8 @@ mod fetcher;
 
 #[derive(Debug, Parser)]
 pub struct Command {
-    #[clap(short, long)]
-    path: String,
+    #[clap(short, long, env)]
+    path: Option<String>,
 
     #[clap(short, long)]
     url: String,
@@ -17,7 +17,8 @@ pub struct Command {
 
 impl Command {
     pub async fn execute(self) -> Result<()> {
-        let mut fetcher = Fetcher::new(self.path.into(), &self.url)?;
+        let path = self.path.unwrap_or("/tmp/side_chain_data".to_string());
+        let mut fetcher = Fetcher::new(path.into(), &self.url)?;
         fetcher.run().await
     }
 }
