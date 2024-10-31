@@ -1,7 +1,11 @@
 [package]
-name = "scd"
+name = "side-chain-data-collector"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "scd"
+path = "src/main.rs"
 
 [dependencies]
 env_logger = "0.10"
