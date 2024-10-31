@@ -11,14 +11,17 @@ pub struct Command {
     #[clap(short, long, env)]
     path: Option<String>,
 
-    #[clap(short, long)]
-    url: String,
+    #[clap(short, long, env)]
+    url: Option<String>,
 }
 
 impl Command {
     pub async fn execute(self) -> Result<()> {
         let path = self.path.unwrap_or("/tmp/side_chain_data".to_string());
-        let mut fetcher = Fetcher::new(path.into(), &self.url)?;
+        let url = self
+            .url
+            .unwrap_or("http://side-chain.dev-chain.polyhedra.network".to_string());
+        let mut fetcher = Fetcher::new(path.into(), &url)?;
         fetcher.run().await
     }
 }
