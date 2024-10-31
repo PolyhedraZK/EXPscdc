@@ -4,8 +4,8 @@ build:
 release:
 	cargo build --release
 install: release
-	rm -f ~/.cargo/bin/side-chain-data-services
-	cp target/release/side-chain-data-services ~/.cargo/bin/
+	rm -f ~/.cargo/bin/scd
+	cp target/release/scd ~/.cargo/bin/
 fmt:
 	cargo fmt
 run:

@@ -1,5 +1,5 @@
 [package]
-name = "side-chain-data-services"
+name = "scd"
 version = "0.1.0"
 edition = "2021"
 
