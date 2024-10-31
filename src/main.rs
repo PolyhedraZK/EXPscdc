@@ -8,7 +8,7 @@ mod fetcher;
 
 #[derive(Debug, Parser)]
 pub struct Command {
-    #[clap(short, long, env)]
+    #[clap(short, long, env = "SIDE_CHAIN_DATA_PATH")]
     path: Option<String>,
 
     #[clap(short, long, env)]
