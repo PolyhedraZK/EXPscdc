@@ -1,6 +1,7 @@
 use std::{
     collections::BTreeMap,
     fs::{self, create_dir_all, remove_file},
+    io::Write,
     path::PathBuf,
     thread::sleep,
     time::Duration,
@@ -8,6 +9,7 @@ use std::{
 
 use anyhow::{anyhow, Result};
 use base64::{engine::general_purpose::STANDARD, Engine};
+use flate2::write::GzDecoder;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
@@ -56,7 +58,7 @@ impl Fetcher {
             }
         }
     }
-    async fn get_data(&self) -> Result<BTreeMap<String, String>> {
+    async fn get_data(&self) -> Result<BTreeMap<String, Vec<u8>>> {
         let url = format!("{}/block?height={}", self.url, self.height);
 
         let resp: Value = reqwest::get(url).await?.json::<Value>().await?;
@@ -72,30 +74,15 @@ impl Fetcher {
         let mut ret = BTreeMap::new();
         log::debug!("get {} tx:{:?}", self.height, txs);
         for tx in txs {
-            if let Ok((tx_bytes, tx)) =
-                STANDARD
-                    .decode(tx)
-                    .map_err(|e| anyhow!("{}", e))
-                    .and_then(|tx_bytes| {
-                        serde_json::from_slice::<Value>(&tx_bytes)
-                            .map(|tx| (tx_bytes, tx))
-                            .map_err(|e| anyhow!("{}", e))
-                    })
-            {
-                if Some("blob") == tx["type"].as_str() {
-                    let tx_hash = hex::encode(Sha256::digest(&tx_bytes));
-                    if let Some(v) = tx["body"]["data"].as_str() {
-                        ret.insert(tx_hash, v.to_string());
-                    }
-                }
+            if let Ok((tx_hash, data)) = decode_tx(tx) {
+                ret.insert(tx_hash, data);
             }
         }
         Ok(ret)
     }
 
-    async fn save_data(&self, hash: &str, data: &str) -> Result<()> {
+    async fn save_data(&self, hash: &str, data: &[u8]) -> Result<()> {
         let hash = hash.strip_prefix("0x").unwrap_or(hash);
-        let data = data.strip_prefix("0x").unwrap_or(data);
 
         let path = self.path.join(hash[0..4].to_string());
         if !path.exists() {
@@ -109,4 +96,25 @@ impl Fetcher {
 
         Ok(())
     }
+}
+
+fn decode_tx(tx: &str) -> Result<(String, Vec<u8>)> {
+    let tx_bytes = STANDARD.decode(tx)?;
+    let tx = serde_json::from_slice::<Value>(&tx_bytes)?;
+    if Some("blob") != tx["type"].as_str() {
+        return Err(anyhow!("type error"));
+    }
+    let data = tx["body"]["data"]
+        .as_str()
+        .ok_or(anyhow!("data not found"))?;
+
+    let data = hex::decode(data)?;
+
+    let tx_hash = hex::encode(Sha256::digest(&tx_bytes));
+
+    let mut e = GzDecoder::new(Vec::new());
+    e.write_all(&data)?;
+    let data = e.finish()?;
+
+    Ok((tx_hash, data))
 }
