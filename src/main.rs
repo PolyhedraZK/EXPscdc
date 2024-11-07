@@ -20,7 +20,7 @@ impl Command {
         let path = self.path.unwrap_or("/tmp/side_chain_data".to_string());
         let url = self
             .url
-            .unwrap_or("https://tendermint-sidechain-devnet.polyhedra.network".to_string());
+            .unwrap_or("https://tendermint-sidechain-testnet.expchain.ai".to_string());
         let mut fetcher = Fetcher::new(path.into(), &url)?;
         fetcher.run().await
     }
