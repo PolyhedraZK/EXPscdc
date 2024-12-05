@@ -1,8 +1,8 @@
-# side-chain-data-collector
+# EXPscdc
 
 ```
-# scd -h
-Usage: scd [OPTIONS]
+# EXPscdc -h
+Usage: EXPscdc [OPTIONS]
 
 Options:
   -p, --path <PATH>  [env: SIDE_CHAIN_DATA_PATH=]

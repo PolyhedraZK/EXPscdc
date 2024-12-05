@@ -5,8 +5,8 @@ release:
 	cargo build --release
 
 install: release
-	rm -f ~/.cargo/bin/scd
-	cp -f target/release/scd ~/.cargo/bin/
+	rm -f ~/.cargo/bin/EXPscdc
+	cp -f target/release/EXPscdc ~/.cargo/bin/
 
 fmt:
 	cargo fmt
