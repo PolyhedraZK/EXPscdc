@@ -1,10 +1,10 @@
 [package]
-name = "side-chain-data-collector"
+name = "EXPscdc"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "scd"
+name = "EXPscdc"
 path = "src/main.rs"
 
 [dependencies]
