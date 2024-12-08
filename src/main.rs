@@ -19,7 +19,7 @@ pub struct Command {
 }
 
 impl Command {
-    pub async fn execute(self) -> Result<()> {
+    pub fn execute(self) -> Result<()> {
         let path = self.path.unwrap_or("/tmp/side_chain_data".to_string());
         let url = self
             .url
@@ -27,14 +27,15 @@ impl Command {
         let mut fetcher = Fetcher::new(path.into(), &url)?;
 
         if self.daemon {
-            nix::unistd::daemon(false, true)?;
+            nix::unistd::daemon(true, true)?;
         }
 
-        fetcher.run().await
+        let rt = tokio::runtime::Runtime::new()?;
+        rt.block_on(fetcher.run())
     }
 }
-#[tokio::main]
-async fn main() -> Result<()> {
+
+fn main() {
     log::info!("scd started");
 
     if env::var_os("RUST_BACKTRACE").is_none() {
@@ -48,5 +49,5 @@ async fn main() -> Result<()> {
 
     let cmd = Command::parse();
 
-    cmd.execute().await
+    cmd.execute().unwrap()
 }
